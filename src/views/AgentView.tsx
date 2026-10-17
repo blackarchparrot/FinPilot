@@ -190,7 +190,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
             {providerStatus && (
               <span
                 className={`flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold border ${
-                  providerStatus.provider === 'gemini'
+                  providerStatus.provider === 'openrouter'
                     ? 'border-indigo-500/30 bg-indigo-500/15 text-indigo-300'
                     : 'border-amber-500/30 bg-amber-500/15 text-amber-300'
                 }`}

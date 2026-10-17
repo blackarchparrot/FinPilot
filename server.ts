@@ -23,15 +23,38 @@ async function startServer() {
   });
 
   // API Routes
+  // 0. Health check
+  app.get('/api/health', (_req: Request, res: Response) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.json({ status: 'ok', time: new Date().toISOString() });
+  });
+
   // 1. Get full state
   app.get('/api/finances', (_req: Request, res: Response) => {
-    res.json(getFullState());
+    try {
+      res.setHeader('Content-Type', 'application/json');
+      res.json(getFullState());
+    } catch (err: unknown) {
+      console.error('Error fetching financial state:', err);
+      res.status(500).setHeader('Content-Type', 'application/json').json({
+        error: 'Failed to retrieve financial state',
+        details: err instanceof Error ? err.message : String(err),
+      });
+    }
   });
 
   // 2. Reset demo data
   app.post('/api/finances/reset', (_req: Request, res: Response) => {
-    financeStore.resetState();
-    res.json({ message: 'Financial state reset to defaults', state: getFullState() });
+    try {
+      financeStore.resetState();
+      res.setHeader('Content-Type', 'application/json');
+      res.json({ message: 'Financial state reset to defaults', state: getFullState() });
+    } catch (err: unknown) {
+      console.error('Error resetting financial state:', err);
+      res.status(500).setHeader('Content-Type', 'application/json').json({
+        error: 'Failed to reset financial state',
+      });
+    }
   });
 
   // 3. Transactions
@@ -361,8 +384,9 @@ async function startServer() {
     app.use(vite.middlewares);
   }
 
-  app.listen(PORT, () => {
-    console.log(`FinPilot AI server running on http://localhost:${PORT}`);
+  const portNumber = Number(PORT) || 3000;
+  app.listen(portNumber, '0.0.0.0', () => {
+    console.log(`FinPilot AI server running on http://0.0.0.0:${portNumber}`);
   });
 }
 

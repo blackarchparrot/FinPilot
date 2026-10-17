@@ -25,6 +25,7 @@ import {
   PlanRationaleItem,
   FinanceDataState
 } from '../types/finance.js';
+import { safeFetchJson } from '../utils/apiSafe.js';
 
 interface WorkflowViewProps {
   financeState: FinanceDataState;
@@ -59,7 +60,7 @@ export const WorkflowView: React.FC<WorkflowViewProps> = ({
       const startingAmt = parseFloat(customStarting) || 20000;
       const savingsAmt = forceInfeasible ? 15000 : (parseFloat(customSavings) || 5000);
 
-      const res = await fetch('/api/workflow/start', {
+      const res = await safeFetchJson<{ workflow: AutonomousWorkflowState }>('/api/workflow/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -73,9 +74,8 @@ export const WorkflowView: React.FC<WorkflowViewProps> = ({
         }),
       });
 
-      if (!res.ok) throw new Error('Failed to plan workflow');
-      const data = await res.json();
-      setWorkflow(data.workflow);
+      if (!res.ok || !res.data) throw new Error(res.error || 'Failed to plan workflow');
+      setWorkflow(res.data.workflow);
       await onRefreshState();
     } catch (err: unknown) {
       setErrorMessage(err instanceof Error ? err.message : 'Error starting workflow');
@@ -89,16 +89,14 @@ export const WorkflowView: React.FC<WorkflowViewProps> = ({
     try {
       setActionLoading(true);
       setErrorMessage(null);
-      const res = await fetch(`/api/workflow/${workflow.id}/approve`, {
+      const res = await safeFetchJson<{ workflow: AutonomousWorkflowState }>(`/api/workflow/${workflow.id}/approve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Failed to execute workflow');
+      if (!res.ok || !res.data) {
+        throw new Error(res.error || 'Failed to execute workflow');
       }
-      const data = await res.json();
-      setWorkflow(data.workflow);
+      setWorkflow(res.data.workflow);
       await onRefreshState();
     } catch (err: unknown) {
       setErrorMessage(err instanceof Error ? err.message : 'Execution error');
@@ -112,16 +110,14 @@ export const WorkflowView: React.FC<WorkflowViewProps> = ({
     try {
       setActionLoading(true);
       setErrorMessage(null);
-      const res = await fetch(`/api/workflow/${workflow.id}/rollback`, {
+      const res = await safeFetchJson<{ workflow: AutonomousWorkflowState }>(`/api/workflow/${workflow.id}/rollback`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Failed to rollback');
+      if (!res.ok || !res.data) {
+        throw new Error(res.error || 'Failed to rollback');
       }
-      const data = await res.json();
-      setWorkflow(data.workflow);
+      setWorkflow(res.data.workflow);
       await onRefreshState();
     } catch (err: unknown) {
       setErrorMessage(err instanceof Error ? err.message : 'Rollback error');

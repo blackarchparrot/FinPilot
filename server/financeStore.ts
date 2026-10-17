@@ -262,7 +262,7 @@ function createInitialState(): FinanceDataState {
       summary: 'Audited 2 recent grocery transactions totaling $231.15; Groceries budget currently at 38.5% utilization ($368.85 remaining).',
       details: { category: 'Groceries', totalSpent: 231.15, budgetLimit: 600 },
       status: 'success',
-      aiModel: 'gemini-3.8-flash',
+      aiModel: 'meta-llama/llama-3.3-70b-instruct:free',
     },
     {
       id: 'act-2',
@@ -272,7 +272,7 @@ function createInitialState(): FinanceDataState {
       summary: 'Transferred $150.00 into Tokyo & Kyoto Summer Trip goal; current balance increased to $3,200.00 (66.7% of $4,800 goal).',
       details: { goalId: 'sg-2', contribution: 150, newBalance: 3200 },
       status: 'success',
-      aiModel: 'gemini-3.8-flash',
+      aiModel: 'meta-llama/llama-3.3-70b-instruct:free',
     },
     {
       id: 'act-3',
@@ -282,7 +282,7 @@ function createInitialState(): FinanceDataState {
       summary: 'Identified 4 upcoming bills totaling $362.43. Checking balance of $5,240.25 comfortably covers all obligations with $4,877.82 margin.',
       details: { billsCount: 4, totalDue: 362.43, checkingBalance: 5240.25 },
       status: 'success',
-      aiModel: 'gemini-3.8-flash',
+      aiModel: 'meta-llama/llama-3.3-70b-instruct:free',
     },
   ];
 

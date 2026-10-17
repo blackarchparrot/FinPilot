@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { RotateCcw } from 'lucide-react';
 import { Sidebar, NavTab } from './components/Sidebar.js';
 import { Header } from './components/Header.js';
 import { OverviewView } from './views/OverviewView.js';
@@ -17,6 +18,8 @@ import { TransactionModal } from './components/TransactionModal.js';
 import { BudgetModal } from './components/BudgetModal.js';
 import { SavingsGoalModal } from './components/SavingsGoalModal.js';
 import { ContributeModal } from './components/ContributeModal.js';
+import { OnboardingModal } from './components/OnboardingModal.js';
+import { safeFetchJson } from './utils/apiSafe.js';
 import {
   FinanceDataState,
   Transaction,
@@ -49,26 +52,42 @@ export default function App() {
   const [isContributeModalOpen, setIsContributeModalOpen] = useState(false);
   const [goalToContribute, setGoalToContribute] = useState<SavingsGoal | null>(null);
 
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+
   // Fetch full finances state and provider status
-  const fetchState = async () => {
+  const fetchState = async (isManual = false) => {
     try {
       setLoading(true);
-      const [finRes, provRes] = await Promise.all([
-        fetch('/api/finances'),
-        fetch('/api/ai/provider-status'),
-      ]);
+      const finResult = await safeFetchJson<FinanceDataState>('/api/finances');
 
-      if (!finRes.ok) throw new Error('Failed to fetch financial data');
-      const data: FinanceDataState = await finRes.json();
-      setFinanceState(data);
-
-      if (provRes.ok) {
-        const provData: AIProviderStatus = await provRes.json();
-        setProviderStatus(provData);
+      if (!finResult.ok || !finResult.data) {
+        throw new Error(finResult.error || 'FinPilot backend service warming up. Reconnecting...');
       }
+
+      setFinanceState(finResult.data);
+
+      const provResult = await safeFetchJson<AIProviderStatus>('/api/ai/provider-status').catch(() => null);
+      if (provResult && provResult.ok && provResult.data) {
+        setProviderStatus(provResult.data);
+      }
+
       setError(null);
+      setRetryCount(0);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      const msg = err instanceof Error ? err.message : 'Unknown connection error';
+      setError(msg);
+
+      // Auto-retry reconnection every 1.8 seconds up to 8 attempts
+      setRetryCount((prev) => {
+        const next = isManual ? 1 : prev + 1;
+        if (next <= 8) {
+          setTimeout(() => {
+            fetchState();
+          }, 1800);
+        }
+        return next;
+      });
     } finally {
       setLoading(false);
     }
@@ -91,10 +110,9 @@ export default function App() {
   // Handlers
   const handleResetData = async () => {
     try {
-      const res = await fetch('/api/finances/reset', { method: 'POST' });
-      if (!res.ok) throw new Error('Failed to reset');
-      const data = await res.json();
-      setFinanceState(data.state);
+      const res = await safeFetchJson<{ state: FinanceDataState }>('/api/finances/reset', { method: 'POST' });
+      if (!res.ok || !res.data) throw new Error(res.error || 'Failed to reset demo data');
+      setFinanceState(res.data.state);
       showToast('success', 'Financial ledger reset to initial demo state.');
     } catch (err: unknown) {
       showToast('error', err instanceof Error ? err.message : 'Failed to reset demo data');
@@ -109,32 +127,21 @@ export default function App() {
     account: string;
     date: string;
   }) => {
-    if (transactionToEdit) {
-      const res = await fetch(`/api/transactions/${transactionToEdit.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(txData),
-      });
-      if (!res.ok) throw new Error('Failed to update transaction');
-      const data = await res.json();
-      setFinanceState(data.state);
-    } else {
-      const res = await fetch('/api/transactions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(txData),
-      });
-      if (!res.ok) throw new Error('Failed to create transaction');
-      const data = await res.json();
-      setFinanceState(data.state);
-    }
+    const url = transactionToEdit ? `/api/transactions/${transactionToEdit.id}` : '/api/transactions';
+    const method = transactionToEdit ? 'PUT' : 'POST';
+    const res = await safeFetchJson<{ state: FinanceDataState }>(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(txData),
+    });
+    if (!res.ok || !res.data) throw new Error(res.error || 'Failed to save transaction');
+    setFinanceState(res.data.state);
   };
 
   const handleDeleteTransaction = async (id: string) => {
-    const res = await fetch(`/api/transactions/${id}`, { method: 'DELETE' });
-    if (!res.ok) throw new Error('Failed to delete transaction');
-    const data = await res.json();
-    setFinanceState(data.state);
+    const res = await safeFetchJson<{ state: FinanceDataState }>(`/api/transactions/${id}`, { method: 'DELETE' });
+    if (!res.ok || !res.data) throw new Error(res.error || 'Failed to delete transaction');
+    setFinanceState(res.data.state);
   };
 
   const handleSaveBudget = async (budgetData: {
@@ -142,21 +149,19 @@ export default function App() {
     limit: number;
     color: string;
   }) => {
-    const res = await fetch('/api/budgets', {
+    const res = await safeFetchJson<{ state: FinanceDataState }>('/api/budgets', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(budgetData),
     });
-    if (!res.ok) throw new Error('Failed to save budget');
-    const data = await res.json();
-    setFinanceState(data.state);
+    if (!res.ok || !res.data) throw new Error(res.error || 'Failed to save budget');
+    setFinanceState(res.data.state);
   };
 
   const handleDeleteBudget = async (id: string) => {
-    const res = await fetch(`/api/budgets/${id}`, { method: 'DELETE' });
-    if (!res.ok) throw new Error('Failed to delete budget');
-    const data = await res.json();
-    setFinanceState(data.state);
+    const res = await safeFetchJson<{ state: FinanceDataState }>(`/api/budgets/${id}`, { method: 'DELETE' });
+    if (!res.ok || !res.data) throw new Error(res.error || 'Failed to delete budget');
+    setFinanceState(res.data.state);
   };
 
   const handleSaveGoal = async (goalData: {
@@ -167,44 +172,42 @@ export default function App() {
     category: string;
     color: string;
   }) => {
-    const res = await fetch('/api/savings-goals', {
+    const res = await safeFetchJson<{ state: FinanceDataState }>('/api/savings-goals', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(goalData),
     });
-    if (!res.ok) throw new Error('Failed to create goal');
-    const data = await res.json();
-    setFinanceState(data.state);
+    if (!res.ok || !res.data) throw new Error(res.error || 'Failed to create goal');
+    setFinanceState(res.data.state);
   };
 
   const handleContributeGoal = async (goalId: string, amount: number) => {
-    const res = await fetch(`/api/savings-goals/${goalId}/contribute`, {
+    const res = await safeFetchJson<{ state: FinanceDataState }>(`/api/savings-goals/${goalId}/contribute`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ amount }),
     });
-    if (!res.ok) throw new Error('Failed to contribute to goal');
-    const data = await res.json();
-    setFinanceState(data.state);
+    if (!res.ok || !res.data) throw new Error(res.error || 'Failed to contribute to goal');
+    setFinanceState(res.data.state);
   };
 
   const handleDeleteGoal = async (id: string) => {
-    const res = await fetch(`/api/savings-goals/${id}`, { method: 'DELETE' });
-    if (!res.ok) throw new Error('Failed to delete goal');
-    const data = await res.json();
-    setFinanceState(data.state);
+    const res = await safeFetchJson<{ state: FinanceDataState }>(`/api/savings-goals/${id}`, { method: 'DELETE' });
+    if (!res.ok || !res.data) throw new Error(res.error || 'Failed to delete goal');
+    setFinanceState(res.data.state);
   };
 
   const handlePayBill = async (billId: string) => {
     try {
-      const res = await fetch(`/api/bills/${billId}/pay`, { method: 'POST' });
-      const data = await res.json();
-      if (!res.ok) {
-        showToast('error', data.error || 'Payment rejected: insufficient reserves.');
-        throw new Error(data.error || 'Failed to pay bill');
+      const res = await safeFetchJson<{ state: FinanceDataState; bill?: { name: string } }>(`/api/bills/${billId}/pay`, {
+        method: 'POST',
+      });
+      if (!res.ok || !res.data) {
+        showToast('error', res.error || 'Payment rejected: insufficient reserves.');
+        throw new Error(res.error || 'Failed to pay bill');
       }
-      setFinanceState(data.state);
-      showToast('success', `Payment processed & verified: ${data.bill?.name || 'Bill'} settled.`);
+      setFinanceState(res.data.state);
+      showToast('success', `Payment processed & verified: ${res.data.bill?.name || 'Bill'} settled.`);
     } catch (err: unknown) {
       if (!toast) {
         showToast('error', err instanceof Error ? err.message : 'Failed to pay bill');
@@ -219,48 +222,50 @@ export default function App() {
     toolCalls?: ToolCallTrace[];
     pendingProposal?: PendingProposal;
   }> => {
-    const res = await fetch('/api/ai/chat', {
+    const res = await safeFetchJson<{
+      reply: string;
+      actionExecuted?: string;
+      toolCalls?: ToolCallTrace[];
+      pendingProposal?: PendingProposal;
+      state?: FinanceDataState;
+    }>('/api/ai/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt }),
     });
-    const data = await res.json();
-    if (data.state) {
-      setFinanceState(data.state);
+
+    if (res.data?.state) {
+      setFinanceState(res.data.state);
     }
     return {
-      reply: data.reply || 'Request processed.',
-      actionExecuted: data.actionExecuted,
-      toolCalls: data.toolCalls,
-      pendingProposal: data.pendingProposal,
+      reply: res.data?.reply || res.error || 'Request processed.',
+      actionExecuted: res.data?.actionExecuted,
+      toolCalls: res.data?.toolCalls,
+      pendingProposal: res.data?.pendingProposal,
     };
   };
 
   const handleApproveProposal = async (proposalId: string) => {
-    const res = await fetch(`/api/ai/proposals/${proposalId}/approve`, {
+    const res = await safeFetchJson<{ state: FinanceDataState }>(`/api/ai/proposals/${proposalId}/approve`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
     });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || 'Failed to approve proposal');
+    if (!res.ok || !res.data) {
+      throw new Error(res.error || 'Failed to approve proposal');
     }
-    const data = await res.json();
-    setFinanceState(data.state);
+    setFinanceState(res.data.state);
   };
 
   const handleRejectProposal = async (proposalId: string) => {
-    const res = await fetch(`/api/ai/proposals/${proposalId}/reject`, {
+    const res = await safeFetchJson<{ state: FinanceDataState }>(`/api/ai/proposals/${proposalId}/reject`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ reason: 'User declined action in UI' }),
     });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || 'Failed to decline proposal');
+    if (!res.ok || !res.data) {
+      throw new Error(res.error || 'Failed to decline proposal');
     }
-    const data = await res.json();
-    setFinanceState(data.state);
+    setFinanceState(res.data.state);
   };
 
   const handleExecutePromptFromKicker = (promptText: string) => {
@@ -286,16 +291,27 @@ export default function App() {
   if (error || !financeState) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#0B0F19] text-white p-4">
-        <div className="max-w-md rounded-2xl border border-red-800 bg-red-950/30 p-6 text-center space-y-3">
-          <p className="text-sm font-semibold text-red-300">
-            {error || 'Unable to connect to financial store'}
+        <div className="max-w-md w-full rounded-2xl border border-indigo-500/30 bg-[#0E1322] p-6 text-center space-y-4 shadow-2xl">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-600/20 text-indigo-400">
+            <RotateCcw className="h-6 w-6 animate-spin" />
+          </div>
+          <div>
+            <h2 className="text-base font-bold text-white tracking-tight">FinPilot AI Engine Connecting</h2>
+            <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+              {error || 'Syncing ledger state with backend service...'}
+            </p>
+          </div>
+          <div className="pt-2 flex justify-center">
+            <button
+              onClick={() => fetchState(true)}
+              className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-500 transition-all shadow-md shadow-indigo-600/30 active:scale-95"
+            >
+              Retry Connection Now
+            </button>
+          </div>
+          <p className="text-[10px] text-slate-500 font-mono">
+            Auto-reconnecting every 1.8s · Server Port 3000
           </p>
-          <button
-            onClick={fetchState}
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-500"
-          >
-            Retry Connection
-          </button>
         </div>
       </div>
     );
@@ -311,6 +327,7 @@ export default function App() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         onResetData={handleResetData}
+        onOpenOnboarding={() => setIsOnboardingOpen(true)}
         isOpenMobile={isMobileNavOpen}
         onCloseMobile={() => setIsMobileNavOpen(false)}
         totalBalance={financeState.summary.totalBalance}
@@ -328,6 +345,7 @@ export default function App() {
             setIsTransactionModalOpen(true);
           }}
           onNavigateToAgent={() => setActiveTab('agent')}
+          onOpenOnboarding={() => setIsOnboardingOpen(true)}
           unpaidBillsCount={unpaidBillsCount}
           pendingProposalsCount={pendingProposals.length}
           providerStatus={providerStatus}
@@ -466,6 +484,17 @@ export default function App() {
         }}
         goal={goalToContribute}
         onSubmit={handleContributeGoal}
+      />
+
+      <OnboardingModal
+        isOpen={isOnboardingOpen}
+        onClose={() => setIsOnboardingOpen(false)}
+        onNavigateToTab={(tab) => {
+          setActiveTab(tab);
+          setIsOnboardingOpen(false);
+        }}
+        onResetData={handleResetData}
+        currency={currency}
       />
 
       {/* Floating Notification Toast */}

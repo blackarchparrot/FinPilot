@@ -90,18 +90,20 @@ export const Header: React.FC<HeaderProps> = ({
           <div
             title={providerStatus.description}
             className={`hidden sm:flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium border ${
-              providerStatus.provider === 'gemini'
+              providerStatus.provider === 'openrouter'
                 ? 'border-indigo-500/30 bg-indigo-500/10 text-indigo-300'
                 : 'border-amber-500/30 bg-amber-500/10 text-amber-300'
             }`}
           >
             <span
               className={`h-1.5 w-1.5 rounded-full ${
-                providerStatus.provider === 'gemini' ? 'bg-indigo-400 animate-pulse' : 'bg-amber-400'
+                providerStatus.provider === 'openrouter' ? 'bg-indigo-400 animate-pulse' : 'bg-amber-400'
               }`}
             />
             <span className="font-mono text-[10px]">
-              {providerStatus.provider === 'gemini' ? 'Gemini 3.8 Flash (Live)' : 'Demo Mode (Local Engine)'}
+              {providerStatus.provider === 'openrouter'
+                ? `OpenRouter (${providerStatus.model})`
+                : 'Demo Engine (Offline-Safe)'}
             </span>
           </div>
         )}

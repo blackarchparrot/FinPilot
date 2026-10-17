@@ -1,4 +1,3 @@
-import { GoogleGenAI, Type, FunctionDeclaration } from '@google/genai';
 import { financeStore } from './financeStore.js';
 import { proposalStore } from './proposalStore.js';
 import {
@@ -14,162 +13,161 @@ import {
 import {
   ToolCallTrace,
   PendingProposal,
-  AIProviderStatus
+  AIProviderStatus,
 } from '../src/types/finance.js';
 
-let aiClient: GoogleGenAI | null = null;
+const DEFAULT_FREE_MODEL = 'meta-llama/llama-3.3-70b-instruct:free';
 
 export function getAIProviderStatus(): AIProviderStatus {
-  const hasApiKey = !!process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim().length > 0;
-  if (hasApiKey) {
+  const apiKey = process.env.OPENROUTER_API_KEY?.trim();
+  const configuredModel = process.env.OPENROUTER_MODEL?.trim() || DEFAULT_FREE_MODEL;
+  const isFreeModel = configuredModel.endsWith(':free');
+
+  if (apiKey && apiKey.length > 0) {
     return {
-      provider: 'gemini',
-      model: 'gemini-3.8-flash',
+      provider: 'openrouter',
+      model: configuredModel,
       hasApiKey: true,
-      description: 'Connected to Gemini 3.8 Flash with Live Tool Execution',
+      isFreeModel,
+      description: `Connected to OpenRouter Free Model (${configuredModel})`,
     };
   }
+
   return {
     provider: 'demo',
     model: 'finpilot-deterministic-engine',
     hasApiKey: false,
-    description: 'Demo Mode: Running deterministic local tool-calling engine',
+    isFreeModel: true,
+    description: 'Demo Mode: Running deterministic local tool-calling engine (Zero external API dependencies)',
   };
 }
 
-function getAIClient(): GoogleGenAI | null {
-  if (!aiClient && process.env.GEMINI_API_KEY) {
-    aiClient = new GoogleGenAI({
-      apiKey: process.env.GEMINI_API_KEY,
-      httpOptions: {
-        headers: {
-          'User-Agent': 'aistudio-build',
+// 7 Explicit Function Declarations (OpenAI / OpenRouter JSON Schema format)
+const OPENROUTER_TOOLS = [
+  {
+    type: 'function',
+    function: {
+      name: 'get_transactions',
+      description: 'Retrieve real deterministic transactions from the user ledger. Filter by category, type (income, expense, transfer), or limit.',
+      parameters: {
+        type: 'object',
+        properties: {
+          category: { type: 'string', description: 'Optional category filter, e.g. Dining, Groceries, Housing' },
+          type: { type: 'string', description: "Optional transaction type: 'income', 'expense', or 'transfer'" },
+          limit: { type: 'number', description: 'Max number of transactions to return (default: 10)' },
+          startDate: { type: 'string', description: 'Optional start date YYYY-MM-DD' },
+          endDate: { type: 'string', description: 'Optional end date YYYY-MM-DD' },
         },
       },
-    });
-  }
-  return aiClient;
-}
-
-// 7 Explicit Function Declarations
-const getTransactionsDeclaration: FunctionDeclaration = {
-  name: 'get_transactions',
-  description: 'Retrieve real deterministic transactions from the user ledger. Filter by category, type (income, expense, transfer), or limit.',
-  parameters: {
-    type: Type.OBJECT,
-    properties: {
-      category: { type: Type.STRING, description: 'Optional category filter, e.g. Dining, Groceries, Housing' },
-      type: { type: Type.STRING, description: "Optional transaction type: 'income', 'expense', or 'transfer'" },
-      limit: { type: Type.NUMBER, description: 'Max number of transactions to return (default: 10)' },
-      startDate: { type: Type.STRING, description: 'Optional start date YYYY-MM-DD' },
-      endDate: { type: Type.STRING, description: 'Optional end date YYYY-MM-DD' },
     },
   },
-};
-
-const calculateMonthlySpendingDeclaration: FunctionDeclaration = {
-  name: 'calculate_monthly_spending',
-  description: 'Perform deterministic financial calculations on expenses, net savings, category percentage breakdown, and budget limits.',
-  parameters: {
-    type: Type.OBJECT,
-    properties: {
-      byCategory: { type: Type.BOOLEAN, description: 'Whether to include per-category breakdown and budget comparisons' },
+  {
+    type: 'function',
+    function: {
+      name: 'calculate_monthly_spending',
+      description: 'Perform deterministic financial calculations on expenses, net savings, category percentage breakdown, and budget limits.',
+      parameters: {
+        type: 'object',
+        properties: {
+          byCategory: { type: 'boolean', description: 'Whether to include per-category breakdown and budget comparisons' },
+        },
+      },
     },
   },
-};
-
-const getUpcomingBillsDeclaration: FunctionDeclaration = {
-  name: 'get_upcoming_bills',
-  description: 'Retrieve upcoming scheduled recurring bills and verify if current checking liquidity covers them.',
-  parameters: {
-    type: Type.OBJECT,
-    properties: {
-      daysAhead: { type: Type.NUMBER, description: 'Number of days ahead to look (default: 30)' },
-      status: { type: Type.STRING, description: "'upcoming', 'paid', or 'all'" },
+  {
+    type: 'function',
+    function: {
+      name: 'get_upcoming_bills',
+      description: 'Retrieve upcoming scheduled recurring bills and verify if current checking liquidity covers them.',
+      parameters: {
+        type: 'object',
+        properties: {
+          daysAhead: { type: 'number', description: 'Number of days ahead to look (default: 30)' },
+          status: { type: 'string', description: "'upcoming', 'paid', or 'all'" },
+        },
+      },
     },
   },
-};
-
-const createOrUpdateBudgetDeclaration: FunctionDeclaration = {
-  name: 'create_or_update_budget',
-  description: 'Set or adjust the monthly spending limit for a category. Significant changes require user confirmation before committing.',
-  parameters: {
-    type: Type.OBJECT,
-    properties: {
-      category: { type: Type.STRING, description: 'Category name (e.g. Dining, Groceries, Shopping, Transportation)' },
-      limit: { type: Type.NUMBER, description: 'New monthly limit in dollars' },
-      reason: { type: Type.STRING, description: 'Rationale for the budget change' },
-      confirmed: { type: Type.BOOLEAN, description: 'Set true ONLY if the user has explicitly confirmed this change' },
+  {
+    type: 'function',
+    function: {
+      name: 'create_or_update_budget',
+      description: 'Set or adjust the monthly spending limit for a category. Significant changes require user confirmation before committing.',
+      parameters: {
+        type: 'object',
+        properties: {
+          category: { type: 'string', description: 'Category name (e.g. Dining, Groceries, Shopping, Transportation)' },
+          limit: { type: 'number', description: 'New monthly limit in dollars' },
+          reason: { type: 'string', description: 'Rationale for the budget change' },
+          confirmed: { type: 'boolean', description: 'Set true ONLY if the user has explicitly confirmed this change' },
+        },
+        required: ['category', 'limit'],
+      },
     },
-    required: ['category', 'limit'],
   },
-};
-
-const createSavingsPlanDeclaration: FunctionDeclaration = {
-  name: 'create_savings_plan',
-  description: 'Create a new savings goal with target amount and deadline. Calculates required monthly contributions and requires confirmation before committing.',
-  parameters: {
-    type: Type.OBJECT,
-    properties: {
-      goalName: { type: Type.STRING, description: 'Name of the savings goal' },
-      targetAmount: { type: Type.NUMBER, description: 'Target dollar amount' },
-      deadline: { type: Type.STRING, description: 'Target date in YYYY-MM-DD format' },
-      category: { type: Type.STRING, description: 'Category, e.g. Travel, Emergency, Technology' },
-      confirmed: { type: Type.BOOLEAN, description: 'Set true ONLY if user has explicitly confirmed' },
+  {
+    type: 'function',
+    function: {
+      name: 'create_savings_plan',
+      description: 'Create a new savings goal with target amount and deadline. Calculates required monthly contributions and requires confirmation before committing.',
+      parameters: {
+        type: 'object',
+        properties: {
+          goalName: { type: 'string', description: 'Name of the savings goal' },
+          targetAmount: { type: 'number', description: 'Target dollar amount' },
+          deadline: { type: 'string', description: 'Target date in YYYY-MM-DD format' },
+          category: { type: 'string', description: 'Category, e.g. Travel, Emergency, Technology' },
+          confirmed: { type: 'boolean', description: 'Set true ONLY if user has explicitly confirmed' },
+        },
+        required: ['goalName', 'targetAmount', 'deadline'],
+      },
     },
-    required: ['goalName', 'targetAmount', 'deadline'],
   },
-};
-
-const createBillReminderDeclaration: FunctionDeclaration = {
-  name: 'create_bill_reminder',
-  description: 'Schedule a recurring bill reminder. Validates parameters and requires user confirmation before committing.',
-  parameters: {
-    type: Type.OBJECT,
-    properties: {
-      name: { type: Type.STRING, description: 'Bill provider name' },
-      amount: { type: Type.NUMBER, description: 'Bill amount in dollars' },
-      dueDate: { type: Type.STRING, description: 'Due date in YYYY-MM-DD format' },
-      category: { type: Type.STRING, description: 'Category (e.g. Utilities, Subscriptions, Transportation)' },
-      isAutoPay: { type: Type.BOOLEAN, description: 'Whether the bill is set to auto-pay' },
-      confirmed: { type: Type.BOOLEAN, description: 'Set true ONLY if user explicitly confirmed' },
+  {
+    type: 'function',
+    function: {
+      name: 'create_bill_reminder',
+      description: 'Schedule a recurring bill reminder. Validates parameters and requires user confirmation before committing.',
+      parameters: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', description: 'Bill provider name' },
+          amount: { type: 'number', description: 'Bill amount in dollars' },
+          dueDate: { type: 'string', description: 'Due date in YYYY-MM-DD format' },
+          category: { type: 'string', description: 'Category (e.g. Utilities, Subscriptions, Transportation)' },
+          isAutoPay: { type: 'boolean', description: 'Whether the bill is set to auto-pay' },
+          confirmed: { type: 'boolean', description: 'Set true ONLY if user explicitly confirmed' },
+        },
+        required: ['name', 'amount', 'dueDate'],
+      },
     },
-    required: ['name', 'amount', 'dueDate'],
   },
-};
-
-const verifyFinancialPlanDeclaration: FunctionDeclaration = {
-  name: 'verify_financial_plan',
-  description: 'Run deterministic stress tests against proposed budget changes, extra savings, and liquid checking reserves to detect deficits or risks.',
-  parameters: {
-    type: Type.OBJECT,
-    properties: {
-      proposedBudgetChanges: {
-        type: Type.ARRAY,
-        items: {
-          type: Type.OBJECT,
-          properties: {
-            category: { type: Type.STRING },
-            limit: { type: Type.NUMBER },
+  {
+    type: 'function',
+    function: {
+      name: 'verify_financial_plan',
+      description: 'Run deterministic stress tests against proposed budget changes, extra savings, and liquid checking reserves to detect deficits or risks.',
+      parameters: {
+        type: 'object',
+        properties: {
+          proposedBudgetChanges: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                category: { type: 'string' },
+                limit: { type: 'number' },
+              },
+              required: ['category', 'limit'],
+            },
+            description: 'Array of proposed category limits',
           },
-          required: ['category', 'limit'],
+          proposedMonthlySavings: { type: 'number', description: 'Extra monthly savings proposed' },
+          proposedExpense: { type: 'number', description: 'Additional planned one-off expense' },
         },
-        description: 'Array of proposed category limits',
       },
-      proposedMonthlySavings: { type: Type.NUMBER, description: 'Extra monthly savings proposed' },
-      proposedExpense: { type: Type.NUMBER, description: 'Additional planned one-off expense' },
     },
   },
-};
-
-const ALL_TOOLS = [
-  getTransactionsDeclaration,
-  calculateMonthlySpendingDeclaration,
-  getUpcomingBillsDeclaration,
-  createOrUpdateBudgetDeclaration,
-  createSavingsPlanDeclaration,
-  createBillReminderDeclaration,
-  verifyFinancialPlanDeclaration,
 ];
 
 /**
@@ -177,32 +175,32 @@ const ALL_TOOLS = [
  */
 function executeTool(
   toolName: string,
-  args: Record<string, any>
-): { result: ToolResult<any>; proposalCreated?: PendingProposal } {
-  let result: ToolResult<any>;
+  args: Record<string, unknown>
+): { result: ToolResult<unknown>; proposalCreated?: PendingProposal } {
+  let result: ToolResult<unknown>;
   let proposalCreated: PendingProposal | undefined;
 
   switch (toolName) {
     case 'get_transactions':
-      result = toolGetTransactions(args);
+      result = toolGetTransactions(args as Parameters<typeof toolGetTransactions>[0]);
       break;
     case 'calculate_monthly_spending':
-      result = toolCalculateMonthlySpending(args);
+      result = toolCalculateMonthlySpending(args as Parameters<typeof toolCalculateMonthlySpending>[0]);
       break;
     case 'get_upcoming_bills':
-      result = toolGetUpcomingBills(args);
+      result = toolGetUpcomingBills(args as Parameters<typeof toolGetUpcomingBills>[0]);
       break;
     case 'create_or_update_budget':
-      result = toolCreateOrUpdateBudget(args as any);
+      result = toolCreateOrUpdateBudget(args as Parameters<typeof toolCreateOrUpdateBudget>[0]);
       break;
     case 'create_savings_plan':
-      result = toolCreateSavingsPlan(args as any);
+      result = toolCreateSavingsPlan(args as Parameters<typeof toolCreateSavingsPlan>[0]);
       break;
     case 'create_bill_reminder':
-      result = toolCreateBillReminder(args as any);
+      result = toolCreateBillReminder(args as Parameters<typeof toolCreateBillReminder>[0]);
       break;
     case 'verify_financial_plan':
-      result = toolVerifyFinancialPlan(args as any);
+      result = toolVerifyFinancialPlan(args as Parameters<typeof toolVerifyFinancialPlan>[0]);
       break;
     default:
       result = { success: false, error: `Unknown tool: ${toolName}` };
@@ -212,7 +210,7 @@ function executeTool(
   if (result.requiresConfirmation && result.proposal) {
     proposalCreated = proposalStore.addProposal({
       id: result.proposal.id,
-      actionType: result.proposal.actionType as any,
+      actionType: result.proposal.actionType as PendingProposal['actionType'],
       title: result.proposal.title,
       description: result.proposal.description,
       impactAnalysis: result.proposal.impactAnalysis,
@@ -235,7 +233,7 @@ export async function processFinancialAgentRequest(prompt: string): Promise<{
   const providerStatus = getAIProviderStatus();
   const toolTraces: ToolCallTrace[] = [];
 
-  // Check if prompt is a direct confirmation of a pending proposal: e.g. "approve prop-123"
+  // 1. Direct confirmation of pending proposal (e.g., "approve prop-123")
   const approveMatch = prompt.match(/(?:approve|confirm|proceed with|yes to)\s+(prop-[\w-]+)/i);
   if (approveMatch && approveMatch[1]) {
     const propId = approveMatch[1];
@@ -258,14 +256,16 @@ export async function processFinancialAgentRequest(prompt: string): Promise<{
     }
   }
 
-  const client = getAIClient();
+  // 2. OpenRouter API integration if OPENROUTER_API_KEY is configured
+  const openRouterKey = process.env.OPENROUTER_API_KEY?.trim();
+  const openRouterModel = process.env.OPENROUTER_MODEL?.trim() || DEFAULT_FREE_MODEL;
 
-  // 1. Try Gemini with Function Calling if API key is provided
-  if (client) {
+  if (openRouterKey && openRouterKey.length > 0) {
     try {
-      const currentState = financeStore.getState();
-      const systemInstruction = `You are FinPilot AI, a precision autonomous Personal Finance Copilot.
-You have direct access to 7 deterministic tools:
+      const systemMessage = {
+        role: 'system',
+        content: `You are FinPilot AI, a precision autonomous Personal Finance Copilot.
+You have access to 7 deterministic financial tools:
 1. get_transactions: Inspect actual transactions. NEVER invent transaction figures.
 2. calculate_monthly_spending: Calculate exact monthly outlays, category percentages, and budget overruns.
 3. get_upcoming_bills: Check upcoming bills and verify checking account coverage.
@@ -279,97 +279,190 @@ RULES:
 - Consequential changes (creating budgets, setting savings plans, adding bills) will return requiresConfirmation: true. When that occurs, clearly present the proposed change, the calculated impact, and ask the user to confirm.
 - If a tool reports an error (e.g. insufficient surplus), explain the error clearly and offer the suggested safe alternative.
 - NEVER claim to have moved money or paid a bill unless an actual payment tool was executed and verified.
-- Be concise, accurate, and professional.`;
+- Be concise, accurate, and professional.`,
+      };
 
-      // Initial call with tools
-      const response = await client.models.generateContent({
-        model: 'gemini-3.8-flash',
-        contents: prompt,
-        config: {
-          systemInstruction,
-          tools: [{ functionDeclarations: ALL_TOOLS }],
+      const userMessage = { role: 'user', content: prompt };
+
+      const openRouterPayload = {
+        model: openRouterModel,
+        messages: [systemMessage, userMessage],
+        tools: OPENROUTER_TOOLS,
+        tool_choice: 'auto',
+      };
+
+      const apiRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${openRouterKey}`,
+          'HTTP-Referer': 'https://github.com/finpilot-ai/finpilot-hackathon-2026',
+          'X-Title': 'FinPilot AI Autonomous Copilot',
         },
+        body: JSON.stringify(openRouterPayload),
       });
 
-      const functionCalls = response.functionCalls;
-      let pendingProposal: PendingProposal | undefined;
-      let primaryAction = 'financial_query';
+      if (!apiRes.ok) {
+        const errorText = await apiRes.text();
+        let errorJson: Record<string, unknown> | null = null;
+        try {
+          errorJson = JSON.parse(errorText);
+        } catch {
+          // non-JSON error
+        }
 
-      if (functionCalls && functionCalls.length > 0) {
-        // Execute the first tool call
-        const call = functionCalls[0];
-        const toolName = call.name || 'unknown_tool';
-        primaryAction = toolName;
-        const callArgs = (call.args || {}) as Record<string, unknown>;
+        const errMsg =
+          (errorJson?.error as { message?: string })?.message ||
+          `OpenRouter API HTTP ${apiRes.status}: ${errorText.slice(0, 160)}`;
+
+        console.warn(`[OpenRouter Warning] Model ${openRouterModel} returned error:`, errMsg);
+
+        // Check if rate limited or model unavailable
+        if (apiRes.status === 429) {
+          return {
+            reply: `OpenRouter Free Model Rate Limit Exceeded: The free model "${openRouterModel}" is currently receiving high community traffic. You can configure another free model (e.g., set OPENROUTER_MODEL="stepfun/step-3.5-flash:free" or "cognitivecomputations/dolphin3.0-r1-mistral-24b:free"), or FinPilot will seamlessly handle your query with the deterministic local engine.`,
+            actionExecuted: 'openrouter_rate_limit',
+            toolCalls: [],
+            providerStatus: {
+              ...providerStatus,
+              error: 'Rate limit reached on free model',
+            },
+          };
+        }
+
+        if (apiRes.status === 404 || apiRes.status === 400) {
+          return {
+            reply: `OpenRouter Model Unavailable: The configured model "${openRouterModel}" returned an error (${errMsg}). Please check available free models on OpenRouter (e.g., meta-llama/llama-3.3-70b-instruct:free, stepfun/step-3.5-flash:free) or verify your OPENROUTER_MODEL setting.`,
+            actionExecuted: 'openrouter_model_error',
+            toolCalls: [],
+            providerStatus: {
+              ...providerStatus,
+              error: `Model unavailable: ${errMsg}`,
+            },
+          };
+        }
+
+        // Fall back gracefully to deterministic engine
+        return runDeterministicLocalAgent(prompt, {
+          ...providerStatus,
+          error: errMsg,
+        });
+      }
+
+      const completion = await apiRes.json();
+      const choice = completion.choices?.[0];
+      const assistantMessage = choice?.message;
+
+      // Handle function calling if OpenRouter returned tool_calls
+      if (assistantMessage?.tool_calls && assistantMessage.tool_calls.length > 0) {
+        const toolCall = assistantMessage.tool_calls[0];
+        const toolName = toolCall.function?.name || 'unknown_tool';
+        let callArgs: Record<string, unknown> = {};
+        try {
+          callArgs = JSON.parse(toolCall.function?.arguments || '{}');
+        } catch {
+          callArgs = {};
+        }
 
         const { result, proposalCreated } = executeTool(toolName, callArgs);
-        pendingProposal = proposalCreated;
-
         toolTraces.push({
-          toolName: toolName,
+          toolName,
           arguments: callArgs,
           result: (result.data || { error: result.error, safeAlternative: result.safeAlternative }) as Record<string, unknown>,
           timestamp: new Date().toISOString(),
         });
 
-        // Send tool execution result back to Gemini for final response synthesis
-        const toolResultContent = {
-          role: 'user',
-          parts: [
-            {
-              text: `Tool '${toolName}' execution result: ${JSON.stringify(result)}.\nSynthesize a clear, verified response for the user. If requiresConfirmation is true, explain the proposed change, impact analysis, and state that user confirmation is required. If error, explain the error and provide safeAlternative.`,
+        // Second turn: send tool result back to OpenRouter for natural synthesis
+        try {
+          const secondPayload = {
+            model: openRouterModel,
+            messages: [
+              systemMessage,
+              userMessage,
+              assistantMessage,
+              {
+                role: 'tool',
+                tool_call_id: toolCall.id,
+                name: toolName,
+                content: JSON.stringify(result),
+              },
+            ],
+          };
+
+          const secondRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${openRouterKey}`,
+              'HTTP-Referer': 'https://github.com/finpilot-ai/finpilot-hackathon-2026',
+              'X-Title': 'FinPilot AI Autonomous Copilot',
             },
-          ],
-        };
+            body: JSON.stringify(secondPayload),
+          });
 
-        const finalResponse = await client.models.generateContent({
-          model: 'gemini-3.8-flash',
-          contents: [
-            { role: 'user', parts: [{ text: prompt }] },
-            response.candidates?.[0]?.content || { role: 'model', parts: [{ text: `Called ${call.name}` }] },
-            toolResultContent,
-          ],
-          config: {
-            systemInstruction,
-          },
-        });
+          if (secondRes.ok) {
+            const secondCompletion = await secondRes.json();
+            const synthesizedReply = secondCompletion.choices?.[0]?.message?.content;
+            if (synthesizedReply) {
+              financeStore.addActionLog({
+                userPrompt: prompt,
+                actionType: toolName as Parameters<typeof financeStore.addActionLog>[0]['actionType'],
+                summary: synthesizedReply.slice(0, 160) + (synthesizedReply.length > 160 ? '...' : ''),
+                details: { toolCalls: toolTraces, proposal: proposalCreated },
+                status: result.success ? (result.requiresConfirmation ? 'awaiting_confirmation' : 'success') : 'failed',
+                aiModel: openRouterModel,
+                toolCalls: toolTraces,
+                verificationResult: {
+                  verified: result.success,
+                  message: result.error ? `Failed: ${result.error}` : 'Deterministic execution verified against ledger',
+                },
+              });
 
-        const replyText = finalResponse.text || `Executed ${call.name} successfully.`;
+              return {
+                reply: synthesizedReply,
+                actionExecuted: toolName,
+                toolCalls: toolTraces,
+                pendingProposal: proposalCreated,
+                providerStatus,
+                details: { toolResult: result },
+              };
+            }
+          }
+        } catch {
+          // If synthesis fails, proceed to deterministic response formatting
+        }
 
-        // Audit log in financeStore
-        financeStore.addActionLog({
-          userPrompt: prompt,
-          actionType: primaryAction as any,
-          summary: replyText.slice(0, 160) + (replyText.length > 160 ? '...' : ''),
-          details: { toolCalls: toolTraces, proposal: pendingProposal },
-          status: result.success ? (result.requiresConfirmation ? 'awaiting_confirmation' : 'success') : 'failed',
-          aiModel: 'gemini-3.8-flash',
-          toolCalls: toolTraces,
-          verificationResult: {
-            verified: result.success,
-            message: result.error ? `Failed: ${result.error}` : 'Deterministic execution verified against ledger',
-          },
-        });
+        // Direct deterministic response formatting if synthesis turn was skipped or failed
+        let formattedReply = `Executed tool '${toolName}':\n`;
+        if (result.success) {
+          if (proposalCreated) {
+            formattedReply = `Action Proposed for Confirmation:\n• ${proposalCreated.title}\n• ${proposalCreated.description}\nImpact: ${proposalCreated.impactAnalysis}\n\nPlease confirm to commit this change to your ledger.`;
+          } else {
+            formattedReply = `Tool '${toolName}' executed successfully with verified deterministic output.`;
+          }
+        } else {
+          formattedReply = `Tool execution failed: ${result.error}${result.safeAlternative ? `\nSuggested Alternative: ${result.safeAlternative}` : ''}`;
+        }
 
         return {
-          reply: replyText,
-          actionExecuted: primaryAction,
+          reply: formattedReply,
+          actionExecuted: toolName,
           toolCalls: toolTraces,
-          pendingProposal,
+          pendingProposal: proposalCreated,
           providerStatus,
           details: { toolResult: result },
         };
       }
 
       // If text response without tool call
-      const textReply = response.text || 'I have analyzed your request.';
+      const textReply = assistantMessage?.content || 'I have analyzed your request.';
       financeStore.addActionLog({
         userPrompt: prompt,
         actionType: 'financial_query',
         summary: textReply.slice(0, 160) + (textReply.length > 160 ? '...' : ''),
         details: { response: textReply },
         status: 'info',
-        aiModel: 'gemini-3.8-flash',
+        aiModel: openRouterModel,
       });
 
       return {
@@ -379,16 +472,16 @@ RULES:
         providerStatus,
       };
     } catch (err: unknown) {
-      console.warn('Gemini tool invocation encountered an issue, falling back to deterministic local tool engine:', err);
+      console.warn('OpenRouter tool invocation encountered an issue, falling back to deterministic local tool engine:', err);
     }
   }
 
-  // 2. Demo Mode / Resilient Local Deterministic Agent
+  // 3. Demo Mode / Resilient Local Deterministic Agent (Zero paid API dependencies)
   return runDeterministicLocalAgent(prompt, providerStatus);
 }
 
 /**
- * Resilient deterministic agent execution for Demo Mode and fallback.
+ * Resilient deterministic agent execution for Demo Mode and offline operation.
  * Maps user natural language requests to the 7 explicitly defined tools.
  */
 function runDeterministicLocalAgent(
@@ -406,7 +499,12 @@ function runDeterministicLocalAgent(
   const toolTraces: ToolCallTrace[] = [];
 
   // 1. Transaction queries: e.g. "show transactions", "what did I spend on groceries", "get transactions"
-  if (lower.includes('transaction') || lower.includes('recent purchases') || lower.includes('what did i spend on') || lower.includes('how much did i spend on')) {
+  if (
+    lower.includes('transaction') ||
+    lower.includes('recent purchases') ||
+    lower.includes('what did i spend on') ||
+    lower.includes('how much did i spend on')
+  ) {
     let category: string | undefined;
     if (lower.includes('grocer')) category = 'Groceries';
     else if (lower.includes('dining') || lower.includes('food') || lower.includes('restaurant')) category = 'Dining';
@@ -417,11 +515,11 @@ function runDeterministicLocalAgent(
     toolTraces.push({
       toolName: 'get_transactions',
       arguments: { category, limit: 5 },
-      result: result.data || {},
+      result: (result.data || {}) as Record<string, unknown>,
       timestamp: new Date().toISOString(),
     });
 
-    const data = result.data as { transactions: any[]; count: number; totalAmount: number };
+    const data = result.data as { transactions: Array<{ date: string; description: string; amount: number; account: string; category: string }>; count: number; totalAmount: number };
     const reply = category
       ? `Retrieved ${data.count} recent transaction(s) under ${category} totaling $${data.totalAmount.toFixed(2)}:\n` +
         data.transactions.map((t) => `• ${t.date} — ${t.description}: $${t.amount.toFixed(2)} (${t.account})`).join('\n')
@@ -448,23 +546,41 @@ function runDeterministicLocalAgent(
   }
 
   // 2. Spending calculations: e.g. "calculate monthly spending", "how is my spending", "spending breakdown", "spending this month"
-  if (lower.includes('spending') || lower.includes('outflow') || lower.includes('expenses this month') || lower.includes('monthly breakdown')) {
+  if (
+    lower.includes('spending') ||
+    lower.includes('outflow') ||
+    lower.includes('expenses this month') ||
+    lower.includes('monthly breakdown')
+  ) {
     const { result } = executeTool('calculate_monthly_spending', { byCategory: true });
     toolTraces.push({
       toolName: 'calculate_monthly_spending',
       arguments: { byCategory: true },
-      result: result.data || {},
+      result: (result.data || {}) as Record<string, unknown>,
       timestamp: new Date().toISOString(),
     });
 
-    const data = result.data as any;
-    const reply = `Monthly Spending Analysis (Deterministic Calculation):\n` +
+    interface SpendingData {
+      totalExpenses: number;
+      dailyAverageSpend: number;
+      totalIncome: number;
+      netSavings: number;
+      savingsRatePct: number;
+      topSpendingCategory: { category: string; amount: number };
+      categoryBreakdown: Record<string, { amount: number; percentageOfTotal: number; budgetLimit?: number }>;
+    }
+    const data = result.data as SpendingData;
+    const reply =
+      `Monthly Spending Analysis (Deterministic Calculation):\n` +
       `• Total Outflow: $${data.totalExpenses.toLocaleString()} across 30 days ($${data.dailyAverageSpend.toFixed(2)}/day)\n` +
       `• Total Inflow: $${data.totalIncome.toLocaleString()} (Net Savings: +$${data.netSavings.toLocaleString()}, ${data.savingsRatePct}% savings rate)\n` +
       `• Top Category: ${data.topSpendingCategory.category} ($${data.topSpendingCategory.amount.toLocaleString()})\n\n` +
       `Category Outlays:\n` +
-      Object.entries(data.categoryBreakdown as Record<string, any>)
-        .map(([cat, info]) => `• ${cat}: $${info.amount.toLocaleString()} (${info.percentageOfTotal}% of total spend${info.budgetLimit ? ` / $${info.budgetLimit} limit` : ''})`)
+      Object.entries(data.categoryBreakdown)
+        .map(
+          ([cat, info]) =>
+            `• ${cat}: $${info.amount.toLocaleString()} (${info.percentageOfTotal}% of total spend${info.budgetLimit ? ` / $${info.budgetLimit} limit` : ''})`
+        )
         .join('\n');
 
     financeStore.addActionLog({
@@ -487,21 +603,34 @@ function runDeterministicLocalAgent(
   }
 
   // 3. Upcoming bills: e.g. "what bills are due", "get upcoming bills", "bills due this month"
-  if (lower.includes('bill') && (lower.includes('due') || lower.includes('upcoming') || lower.includes('what') || lower.includes('check') || lower.includes('list'))) {
+  if (
+    lower.includes('bill') &&
+    (lower.includes('due') || lower.includes('upcoming') || lower.includes('what') || lower.includes('check') || lower.includes('list'))
+  ) {
     const { result } = executeTool('get_upcoming_bills', { daysAhead: 30, status: 'upcoming' });
     toolTraces.push({
       toolName: 'get_upcoming_bills',
       arguments: { daysAhead: 30, status: 'upcoming' },
-      result: result.data || {},
+      result: (result.data || {}) as Record<string, unknown>,
       timestamp: new Date().toISOString(),
     });
 
-    const data = result.data as any;
-    const reply = `Upcoming Obligations Check (Next 30 Days):\n` +
+    interface BillsData {
+      bills: Array<{ name: string; amount: number; dueDate: string; isAutoPay: boolean }>;
+      totalUpcomingAmount: number;
+      checkingBalance: number;
+      isCovered: boolean;
+      remainingCoverageBuffer: number;
+    }
+    const data = result.data as BillsData;
+    const reply =
+      `Upcoming Obligations Check (Next 30 Days):\n` +
       `• ${data.bills.length} pending bill(s) totaling $${data.totalUpcomingAmount.toFixed(2)}\n` +
       `• Checking Reserve: $${data.checkingBalance.toLocaleString()}\n` +
       `• Coverage Status: ${data.isCovered ? 'Fully Covered' : 'Deficit Risk'} with a safe buffer of +$${data.remainingCoverageBuffer.toFixed(2)}\n\n` +
-      data.bills.map((b: any) => `• ${b.name}: $${b.amount.toFixed(2)} (Due ${b.dueDate}, AutoPay: ${b.isAutoPay ? 'ON' : 'OFF'})`).join('\n');
+      data.bills
+        .map((b) => `• ${b.name}: $${b.amount.toFixed(2)} (Due ${b.dueDate}, AutoPay: ${b.isAutoPay ? 'ON' : 'OFF'})`)
+        .join('\n');
 
     financeStore.addActionLog({
       userPrompt: prompt,
@@ -522,11 +651,15 @@ function runDeterministicLocalAgent(
     };
   }
 
-  // 4. Create or update budget: e.g. "set dining budget to 450", "update groceries budget to 700"
+  // 4. Create or update budget: e.g. "set dining budget to 450", "update transportation budget to 550"
   const amountMatch = prompt.match(/\$?\s*(\d+(?:\.\d{1,2})?)/);
   const amount = amountMatch ? parseFloat(amountMatch[1]) : null;
 
-  if (lower.includes('budget') && amount && (lower.includes('set') || lower.includes('update') || lower.includes('change') || lower.includes('create') || lower.includes('limit'))) {
+  if (
+    lower.includes('budget') &&
+    amount &&
+    (lower.includes('set') || lower.includes('update') || lower.includes('change') || lower.includes('create') || lower.includes('limit'))
+  ) {
     let cat = 'Dining';
     if (lower.includes('grocer')) cat = 'Groceries';
     else if (lower.includes('transport')) cat = 'Transportation';
@@ -550,7 +683,8 @@ function runDeterministicLocalAgent(
     });
 
     if (result.requiresConfirmation && proposalCreated) {
-      const reply = `Consequential Budget Change Proposed:\n` +
+      const reply =
+        `Consequential Budget Change Proposed:\n` +
         `• Category: ${cat}\n` +
         `• Proposed Monthly Limit: $${amount.toLocaleString()}\n` +
         `• Impact Analysis: ${proposalCreated.impactAnalysis}\n\n` +
@@ -577,7 +711,10 @@ function runDeterministicLocalAgent(
   }
 
   // 5. Create savings plan: e.g. "create savings goal New Car target 6000 by 2027-05-01"
-  if ((lower.includes('saving') || lower.includes('goal')) && (lower.includes('create') || lower.includes('plan') || lower.includes('target') || lower.includes('new goal'))) {
+  if (
+    (lower.includes('saving') || lower.includes('goal')) &&
+    (lower.includes('create') || lower.includes('plan') || lower.includes('target') || lower.includes('new goal'))
+  ) {
     const targetAmt = amount || 3000;
     const dateMatch = prompt.match(/\d{4}-\d{2}-\d{2}/);
     const deadline = dateMatch ? dateMatch[0] : '2027-06-30';
@@ -612,7 +749,8 @@ function runDeterministicLocalAgent(
     }
 
     if (result.requiresConfirmation && proposalCreated) {
-      const reply = `Savings Plan Proposed:\n` +
+      const reply =
+        `Savings Plan Proposed:\n` +
         `• Goal: "${goalName}"\n` +
         `• Target: $${targetAmt.toLocaleString()} by ${deadline}\n` +
         `• Assessment: ${proposalCreated.impactAnalysis}\n\n` +
@@ -639,7 +777,7 @@ function runDeterministicLocalAgent(
   }
 
   // 6. Create bill reminder: e.g. "add bill reminder Gym Membership 85 due 2026-11-05"
-  if (lower.includes('reminder') || (lower.includes('add bill') || lower.includes('schedule bill'))) {
+  if (lower.includes('reminder') || lower.includes('add bill') || lower.includes('schedule bill')) {
     const billAmt = amount || 50;
     const dateMatch = prompt.match(/\d{4}-\d{2}-\d{2}/);
     const dueDate = dateMatch ? dateMatch[0] : '2026-11-15';
@@ -667,7 +805,8 @@ function runDeterministicLocalAgent(
     });
 
     if (result.requiresConfirmation && proposalCreated) {
-      const reply = `Bill Reminder Proposed:\n` +
+      const reply =
+        `Bill Reminder Proposed:\n` +
         `• Service: "${billName}"\n` +
         `• Amount: $${billAmt.toFixed(2)} due on ${dueDate}\n` +
         `• Impact: ${proposalCreated.impactAnalysis}\n\n` +
@@ -694,7 +833,12 @@ function runDeterministicLocalAgent(
   }
 
   // 7. Verify financial plan / stress test: e.g. "verify my plan", "can i afford", "stress test"
-  if (lower.includes('verify') || lower.includes('stress test') || lower.includes('can i afford') || lower.includes('is my plan safe')) {
+  if (
+    lower.includes('verify') ||
+    lower.includes('stress test') ||
+    lower.includes('can i afford') ||
+    lower.includes('is my plan safe')
+  ) {
     const { result } = executeTool('verify_financial_plan', {
       proposedMonthlySavings: 200,
       proposedExpense: amount || 0,
@@ -703,12 +847,21 @@ function runDeterministicLocalAgent(
     toolTraces.push({
       toolName: 'verify_financial_plan',
       arguments: { proposedMonthlySavings: 200, proposedExpense: amount || 0 },
-      result: result.data || {},
+      result: (result.data || {}) as Record<string, unknown>,
       timestamp: new Date().toISOString(),
     });
 
-    const data = result.data as any;
-    const reply = `Financial Plan Stress Test Results:\n` +
+    interface PlanVerificationData {
+      safetyScore: number;
+      isViable: boolean;
+      projectedMonthlySurplus: number;
+      liquidityBuffer: number;
+      risks: string[];
+      recommendations: string[];
+    }
+    const data = result.data as PlanVerificationData;
+    const reply =
+      `Financial Plan Stress Test Results:\n` +
       `• Safety Score: ${data.safetyScore}/100 (${data.isViable ? 'Plan is Viable' : 'Risk Warning'})\n` +
       `• Projected Net Monthly Surplus: $${data.projectedMonthlySurplus.toFixed(2)}\n` +
       `• Liquidity Buffer after Bills: $${data.liquidityBuffer.toFixed(2)}\n\n` +
@@ -734,17 +887,18 @@ function runDeterministicLocalAgent(
     };
   }
 
-  // Default fallback
+  // Default fallback: calculate monthly spending
   const { result } = executeTool('calculate_monthly_spending', { byCategory: false });
   toolTraces.push({
     toolName: 'calculate_monthly_spending',
     arguments: { byCategory: false },
-    result: result.data || {},
+    result: (result.data || {}) as Record<string, unknown>,
     timestamp: new Date().toISOString(),
   });
 
   const state = financeStore.getState();
-  const reply = `FinPilot AI Portfolio Status:\n` +
+  const reply =
+    `FinPilot AI Portfolio Status:\n` +
     `• Liquid Reserves: $${state.summary.totalBalance.toLocaleString()}\n` +
     `• Monthly Inflow: $${state.summary.monthlyIncome.toLocaleString()} | Outflow: $${state.summary.monthlyExpenses.toLocaleString()}\n` +
     `• Net Cash Flow: +$${state.summary.netCashFlow.toLocaleString()} (${state.summary.savingsRate}% savings rate)\n` +

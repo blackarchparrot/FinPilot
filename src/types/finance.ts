@@ -207,8 +207,10 @@ export interface FinanceDataState {
 }
 
 export interface AIProviderStatus {
-  provider: 'gemini' | 'demo';
+  provider: 'openrouter' | 'demo';
   model: string;
   hasApiKey: boolean;
   description: string;
+  isFreeModel?: boolean;
+  error?: string;
 }

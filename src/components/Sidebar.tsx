@@ -143,8 +143,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </div>
 
-        {/* Reset Demo Data & Footer */}
-        <div className="pt-3 border-t border-slate-800/60">
+        {/* Demo Guide & Reset Demo Data */}
+        <div className="pt-3 border-t border-slate-800/60 space-y-2">
+          <button
+            onClick={() => {
+              onOpenOnboarding();
+              onCloseMobile();
+            }}
+            title="Open FinTech 2026 Walkthrough Guide and Scenario"
+            className="flex w-full items-center justify-center gap-2 rounded-lg border border-purple-500/30 bg-purple-500/10 px-3 py-2 text-xs font-semibold text-purple-300 transition-colors hover:bg-purple-500/20"
+          >
+            <BookOpen className="h-3.5 w-3.5 text-purple-400" />
+            <span>Demo Guide & Scenario</span>
+          </button>
+
           <button
             onClick={onResetData}
             title="Reset to default mock data"
@@ -153,7 +165,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <RotateCcw className="h-3.5 w-3.5" />
             <span>Reset Demo Data</span>
           </button>
-          <div className="mt-3 text-center text-[10px] text-slate-600">
+          <div className="mt-2 text-center text-[10px] text-slate-600">
             FinPilot AI · Fintech Hackathon Edition
           </div>
         </div>
