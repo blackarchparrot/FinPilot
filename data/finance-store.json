@@ -1,13 +1,35 @@
 {
   "summary": {
-    "totalBalance": 18076.71,
+    "totalBalance": 18056.73,
     "monthlyIncome": 4050,
-    "monthlyExpenses": 2793.79,
-    "monthlySavings": 1256.21,
+    "monthlyExpenses": 2813.77,
+    "monthlySavings": 1236.23,
     "savingsRate": 31,
-    "netCashFlow": 1256.21
+    "netCashFlow": 1236.23
   },
   "transactions": [
+    {
+      "date": "2026-10-17",
+      "description": "Bill Payment: Small Cloud Storage Fee",
+      "amount": 9.99,
+      "type": "expense",
+      "category": "Utilities",
+      "account": "Checking",
+      "status": "completed",
+      "source": "recurring_bill",
+      "id": "tx-1792233885449-473"
+    },
+    {
+      "date": "2026-10-17",
+      "description": "Bill Payment: Small Cloud Storage Fee",
+      "amount": 9.99,
+      "type": "expense",
+      "category": "Utilities",
+      "account": "Checking",
+      "status": "completed",
+      "source": "recurring_bill",
+      "id": "tx-1792233850916-336"
+    },
     {
       "date": "2026-10-17",
       "description": "Autonomous Sweep: ৳4,000 to Monthly Protected Savings Reserve (৳)",
@@ -214,7 +236,7 @@
       "id": "b-4",
       "category": "Utilities",
       "limit": 180,
-      "spent": 94.19,
+      "spent": 114.17,
       "period": "monthly",
       "color": "#06B6D4"
     },
@@ -350,9 +372,1264 @@
       "isAutoPay": false,
       "status": "paid",
       "isEssential": false
+    },
+    {
+      "id": "bill-1792233850892-43",
+      "name": "Superyacht Fleet Lease",
+      "amount": 50000,
+      "dueDate": "2026-10-31",
+      "category": "Shopping",
+      "isAutoPay": false,
+      "status": "upcoming",
+      "isEssential": false
+    },
+    {
+      "id": "bill-1792233850911-328",
+      "name": "Small Cloud Storage Fee",
+      "amount": 9.99,
+      "dueDate": "2026-10-25",
+      "category": "Utilities",
+      "isAutoPay": false,
+      "status": "paid",
+      "isEssential": false
+    },
+    {
+      "id": "bill-1792233885440-428",
+      "name": "Superyacht Fleet Lease",
+      "amount": 50000,
+      "dueDate": "2026-10-31",
+      "category": "Shopping",
+      "isAutoPay": false,
+      "status": "upcoming",
+      "isEssential": false
+    },
+    {
+      "id": "bill-1792233885446-703",
+      "name": "Small Cloud Storage Fee",
+      "amount": 9.99,
+      "dueDate": "2026-10-25",
+      "category": "Utilities",
+      "isAutoPay": false,
+      "status": "paid",
+      "isEssential": false
     }
   ],
   "actionHistory": [
+    {
+      "userPrompt": "Show me my recent transactions",
+      "actionType": "get_transactions",
+      "summary": "Here are your recent transactions (last 10):\n\n| Date | Description | Amount | Type | Category | Account | Status |\n|---|---|---|---|---|---|---|\n| 10/17 | Bill ...",
+      "details": {
+        "toolCalls": [
+          {
+            "toolName": "get_transactions",
+            "arguments": {
+              "limit": 10
+            },
+            "result": {
+              "transactions": [
+                {
+                  "date": "2026-10-17",
+                  "description": "Bill Payment: Small Cloud Storage Fee",
+                  "amount": 9.99,
+                  "type": "expense",
+                  "category": "Utilities",
+                  "account": "Checking",
+                  "status": "completed",
+                  "source": "recurring_bill",
+                  "id": "tx-1792233885449-473"
+                },
+                {
+                  "date": "2026-10-17",
+                  "description": "Bill Payment: Small Cloud Storage Fee",
+                  "amount": 9.99,
+                  "type": "expense",
+                  "category": "Utilities",
+                  "account": "Checking",
+                  "status": "completed",
+                  "source": "recurring_bill",
+                  "id": "tx-1792233850916-336"
+                },
+                {
+                  "date": "2026-10-17",
+                  "description": "Autonomous Sweep: ৳4,000 to Monthly Protected Savings Reserve (৳)",
+                  "amount": 4000,
+                  "type": "transfer",
+                  "category": "Savings",
+                  "account": "High-Yield Savings",
+                  "status": "completed",
+                  "source": "ai_agent",
+                  "id": "tx-1792228695495-8"
+                },
+                {
+                  "date": "2026-10-16",
+                  "description": "QA Persistence Assert Tx 1792228695462",
+                  "amount": 47.85,
+                  "type": "expense",
+                  "category": "Groceries",
+                  "account": "Checking",
+                  "status": "completed",
+                  "source": "manual",
+                  "id": "tx-1792228695464-233"
+                },
+                {
+                  "date": "2026-10-17",
+                  "description": "Bill Payment: Small Cloud Storage Fee",
+                  "amount": 9.99,
+                  "type": "expense",
+                  "category": "Utilities",
+                  "account": "Checking",
+                  "status": "completed",
+                  "source": "recurring_bill",
+                  "id": "tx-1792228695390-634"
+                },
+                {
+                  "id": "tx-1",
+                  "date": "2026-10-15",
+                  "description": "TechCorp Bi-Weekly Direct Deposit",
+                  "amount": 3200,
+                  "type": "income",
+                  "category": "Income",
+                  "account": "Checking",
+                  "status": "completed",
+                  "source": "manual"
+                },
+                {
+                  "id": "tx-2",
+                  "date": "2026-10-14",
+                  "description": "Whole Foods Market",
+                  "amount": 142.8,
+                  "type": "expense",
+                  "category": "Groceries",
+                  "account": "Sapphire Card",
+                  "status": "completed",
+                  "source": "ai_agent"
+                },
+                {
+                  "id": "tx-3",
+                  "date": "2026-10-14",
+                  "description": "Blue Bottle Coffee",
+                  "amount": 6.75,
+                  "type": "expense",
+                  "category": "Dining",
+                  "account": "Sapphire Card",
+                  "status": "completed",
+                  "source": "manual"
+                },
+                {
+                  "id": "tx-4",
+                  "date": "2026-10-12",
+                  "description": "ConEdison Electric & Gas",
+                  "amount": 84.2,
+                  "type": "expense",
+                  "category": "Utilities",
+                  "account": "Checking",
+                  "status": "completed",
+                  "source": "recurring_bill"
+                },
+                {
+                  "id": "tx-5",
+                  "date": "2026-10-11",
+                  "description": "Netflix & Spotify Subscriptions",
+                  "amount": 28.98,
+                  "type": "expense",
+                  "category": "Subscriptions",
+                  "account": "Sapphire Card",
+                  "status": "completed",
+                  "source": "recurring_bill"
+                }
+              ],
+              "count": 10,
+              "totalAmount": 7540.55
+            },
+            "timestamp": "2026-10-17T10:44:47.308Z"
+          }
+        ]
+      },
+      "status": "success",
+      "aiModel": "openrouter/free",
+      "toolCalls": [
+        {
+          "toolName": "get_transactions",
+          "arguments": {
+            "limit": 10
+          },
+          "result": {
+            "transactions": [
+              {
+                "date": "2026-10-17",
+                "description": "Bill Payment: Small Cloud Storage Fee",
+                "amount": 9.99,
+                "type": "expense",
+                "category": "Utilities",
+                "account": "Checking",
+                "status": "completed",
+                "source": "recurring_bill",
+                "id": "tx-1792233885449-473"
+              },
+              {
+                "date": "2026-10-17",
+                "description": "Bill Payment: Small Cloud Storage Fee",
+                "amount": 9.99,
+                "type": "expense",
+                "category": "Utilities",
+                "account": "Checking",
+                "status": "completed",
+                "source": "recurring_bill",
+                "id": "tx-1792233850916-336"
+              },
+              {
+                "date": "2026-10-17",
+                "description": "Autonomous Sweep: ৳4,000 to Monthly Protected Savings Reserve (৳)",
+                "amount": 4000,
+                "type": "transfer",
+                "category": "Savings",
+                "account": "High-Yield Savings",
+                "status": "completed",
+                "source": "ai_agent",
+                "id": "tx-1792228695495-8"
+              },
+              {
+                "date": "2026-10-16",
+                "description": "QA Persistence Assert Tx 1792228695462",
+                "amount": 47.85,
+                "type": "expense",
+                "category": "Groceries",
+                "account": "Checking",
+                "status": "completed",
+                "source": "manual",
+                "id": "tx-1792228695464-233"
+              },
+              {
+                "date": "2026-10-17",
+                "description": "Bill Payment: Small Cloud Storage Fee",
+                "amount": 9.99,
+                "type": "expense",
+                "category": "Utilities",
+                "account": "Checking",
+                "status": "completed",
+                "source": "recurring_bill",
+                "id": "tx-1792228695390-634"
+              },
+              {
+                "id": "tx-1",
+                "date": "2026-10-15",
+                "description": "TechCorp Bi-Weekly Direct Deposit",
+                "amount": 3200,
+                "type": "income",
+                "category": "Income",
+                "account": "Checking",
+                "status": "completed",
+                "source": "manual"
+              },
+              {
+                "id": "tx-2",
+                "date": "2026-10-14",
+                "description": "Whole Foods Market",
+                "amount": 142.8,
+                "type": "expense",
+                "category": "Groceries",
+                "account": "Sapphire Card",
+                "status": "completed",
+                "source": "ai_agent"
+              },
+              {
+                "id": "tx-3",
+                "date": "2026-10-14",
+                "description": "Blue Bottle Coffee",
+                "amount": 6.75,
+                "type": "expense",
+                "category": "Dining",
+                "account": "Sapphire Card",
+                "status": "completed",
+                "source": "manual"
+              },
+              {
+                "id": "tx-4",
+                "date": "2026-10-12",
+                "description": "ConEdison Electric & Gas",
+                "amount": 84.2,
+                "type": "expense",
+                "category": "Utilities",
+                "account": "Checking",
+                "status": "completed",
+                "source": "recurring_bill"
+              },
+              {
+                "id": "tx-5",
+                "date": "2026-10-11",
+                "description": "Netflix & Spotify Subscriptions",
+                "amount": 28.98,
+                "type": "expense",
+                "category": "Subscriptions",
+                "account": "Sapphire Card",
+                "status": "completed",
+                "source": "recurring_bill"
+              }
+            ],
+            "count": 10,
+            "totalAmount": 7540.55
+          },
+          "timestamp": "2026-10-17T10:44:47.308Z"
+        }
+      ],
+      "verificationResult": {
+        "verified": true,
+        "message": "Deterministic execution verified against ledger"
+      },
+      "id": "act-1792233952548",
+      "timestamp": "2026-10-17T10:45:52.548Z"
+    },
+    {
+      "userPrompt": "Show me my recent transactions",
+      "actionType": "get_transactions",
+      "summary": "Here are your recent transactions (most recent first):\n\n**October 2026**\n\n| Date | Description | Amount | Category | Account |\n|------|-------------|--------|--...",
+      "details": {
+        "toolCalls": [
+          {
+            "toolName": "get_transactions",
+            "arguments": {
+              "limit": 20
+            },
+            "result": {
+              "transactions": [
+                {
+                  "date": "2026-10-17",
+                  "description": "Bill Payment: Small Cloud Storage Fee",
+                  "amount": 9.99,
+                  "type": "expense",
+                  "category": "Utilities",
+                  "account": "Checking",
+                  "status": "completed",
+                  "source": "recurring_bill",
+                  "id": "tx-1792233885449-473"
+                },
+                {
+                  "date": "2026-10-17",
+                  "description": "Bill Payment: Small Cloud Storage Fee",
+                  "amount": 9.99,
+                  "type": "expense",
+                  "category": "Utilities",
+                  "account": "Checking",
+                  "status": "completed",
+                  "source": "recurring_bill",
+                  "id": "tx-1792233850916-336"
+                },
+                {
+                  "date": "2026-10-17",
+                  "description": "Autonomous Sweep: ৳4,000 to Monthly Protected Savings Reserve (৳)",
+                  "amount": 4000,
+                  "type": "transfer",
+                  "category": "Savings",
+                  "account": "High-Yield Savings",
+                  "status": "completed",
+                  "source": "ai_agent",
+                  "id": "tx-1792228695495-8"
+                },
+                {
+                  "date": "2026-10-16",
+                  "description": "QA Persistence Assert Tx 1792228695462",
+                  "amount": 47.85,
+                  "type": "expense",
+                  "category": "Groceries",
+                  "account": "Checking",
+                  "status": "completed",
+                  "source": "manual",
+                  "id": "tx-1792228695464-233"
+                },
+                {
+                  "date": "2026-10-17",
+                  "description": "Bill Payment: Small Cloud Storage Fee",
+                  "amount": 9.99,
+                  "type": "expense",
+                  "category": "Utilities",
+                  "account": "Checking",
+                  "status": "completed",
+                  "source": "recurring_bill",
+                  "id": "tx-1792228695390-634"
+                },
+                {
+                  "id": "tx-1",
+                  "date": "2026-10-15",
+                  "description": "TechCorp Bi-Weekly Direct Deposit",
+                  "amount": 3200,
+                  "type": "income",
+                  "category": "Income",
+                  "account": "Checking",
+                  "status": "completed",
+                  "source": "manual"
+                },
+                {
+                  "id": "tx-2",
+                  "date": "2026-10-14",
+                  "description": "Whole Foods Market",
+                  "amount": 142.8,
+                  "type": "expense",
+                  "category": "Groceries",
+                  "account": "Sapphire Card",
+                  "status": "completed",
+                  "source": "ai_agent"
+                },
+                {
+                  "id": "tx-3",
+                  "date": "2026-10-14",
+                  "description": "Blue Bottle Coffee",
+                  "amount": 6.75,
+                  "type": "expense",
+                  "category": "Dining",
+                  "account": "Sapphire Card",
+                  "status": "completed",
+                  "source": "manual"
+                },
+                {
+                  "id": "tx-4",
+                  "date": "2026-10-12",
+                  "description": "ConEdison Electric & Gas",
+                  "amount": 84.2,
+                  "type": "expense",
+                  "category": "Utilities",
+                  "account": "Checking",
+                  "status": "completed",
+                  "source": "recurring_bill"
+                },
+                {
+                  "id": "tx-5",
+                  "date": "2026-10-11",
+                  "description": "Netflix & Spotify Subscriptions",
+                  "amount": 28.98,
+                  "type": "expense",
+                  "category": "Subscriptions",
+                  "account": "Sapphire Card",
+                  "status": "completed",
+                  "source": "recurring_bill"
+                },
+                {
+                  "id": "tx-6",
+                  "date": "2026-10-10",
+                  "description": "Uber Ride SFO Airport",
+                  "amount": 42.5,
+                  "type": "expense",
+                  "category": "Transportation",
+                  "account": "Sapphire Card",
+                  "status": "completed",
+                  "source": "manual"
+                },
+                {
+                  "id": "tx-7",
+                  "date": "2026-10-08",
+                  "description": "Equinox Health & Fitness",
+                  "amount": 160,
+                  "type": "expense",
+                  "category": "Healthcare",
+                  "account": "Checking",
+                  "status": "completed",
+                  "source": "manual"
+                },
+                {
+                  "id": "tx-8",
+                  "date": "2026-10-06",
+                  "description": "Trader Joe's Provisions",
+                  "amount": 88.35,
+                  "type": "expense",
+                  "category": "Groceries",
+                  "account": "Sapphire Card",
+                  "status": "completed",
+                  "source": "manual"
+                },
+                {
+                  "id": "tx-9",
+                  "date": "2026-10-04",
+                  "description": "Sweetgreen Salad",
+                  "amount": 18.25,
+                  "type": "expense",
+                  "category": "Dining",
+                  "account": "Sapphire Card",
+                  "status": "completed",
+                  "source": "manual"
+                },
+                {
+                  "id": "tx-10",
+                  "date": "2026-10-01",
+                  "description": "Skyline Residences Monthly Rent",
+                  "amount": 2100,
+                  "type": "expense",
+                  "category": "Housing",
+                  "account": "Checking",
+                  "status": "completed",
+                  "source": "recurring_bill"
+                },
+                {
+                  "id": "tx-11",
+                  "date": "2026-10-01",
+                  "description": "Monthly High-Yield Savings Sweep",
+                  "amount": 600,
+                  "type": "transfer",
+                  "category": "Savings",
+                  "account": "Savings",
+                  "status": "completed",
+                  "source": "ai_agent"
+                },
+                {
+                  "id": "tx-12",
+                  "date": "2026-09-28",
+                  "description": "Freelance UX Architecture Payout",
+                  "amount": 850,
+                  "type": "income",
+                  "category": "Income",
+                  "account": "Checking",
+                  "status": "completed",
+                  "source": "manual"
+                },
+                {
+                  "id": "tx-13",
+                  "date": "2026-09-26",
+                  "description": "Amazon Essentials & Office Gear",
+                  "amount": 64.12,
+                  "type": "expense",
+                  "category": "Shopping",
+                  "account": "Sapphire Card",
+                  "status": "completed",
+                  "source": "manual"
+                }
+              ],
+              "count": 18,
+              "totalAmount": 11463.77
+            },
+            "timestamp": "2026-10-17T10:45:39.769Z"
+          }
+        ]
+      },
+      "status": "success",
+      "aiModel": "openrouter/free",
+      "toolCalls": [
+        {
+          "toolName": "get_transactions",
+          "arguments": {
+            "limit": 20
+          },
+          "result": {
+            "transactions": [
+              {
+                "date": "2026-10-17",
+                "description": "Bill Payment: Small Cloud Storage Fee",
+                "amount": 9.99,
+                "type": "expense",
+                "category": "Utilities",
+                "account": "Checking",
+                "status": "completed",
+                "source": "recurring_bill",
+                "id": "tx-1792233885449-473"
+              },
+              {
+                "date": "2026-10-17",
+                "description": "Bill Payment: Small Cloud Storage Fee",
+                "amount": 9.99,
+                "type": "expense",
+                "category": "Utilities",
+                "account": "Checking",
+                "status": "completed",
+                "source": "recurring_bill",
+                "id": "tx-1792233850916-336"
+              },
+              {
+                "date": "2026-10-17",
+                "description": "Autonomous Sweep: ৳4,000 to Monthly Protected Savings Reserve (৳)",
+                "amount": 4000,
+                "type": "transfer",
+                "category": "Savings",
+                "account": "High-Yield Savings",
+                "status": "completed",
+                "source": "ai_agent",
+                "id": "tx-1792228695495-8"
+              },
+              {
+                "date": "2026-10-16",
+                "description": "QA Persistence Assert Tx 1792228695462",
+                "amount": 47.85,
+                "type": "expense",
+                "category": "Groceries",
+                "account": "Checking",
+                "status": "completed",
+                "source": "manual",
+                "id": "tx-1792228695464-233"
+              },
+              {
+                "date": "2026-10-17",
+                "description": "Bill Payment: Small Cloud Storage Fee",
+                "amount": 9.99,
+                "type": "expense",
+                "category": "Utilities",
+                "account": "Checking",
+                "status": "completed",
+                "source": "recurring_bill",
+                "id": "tx-1792228695390-634"
+              },
+              {
+                "id": "tx-1",
+                "date": "2026-10-15",
+                "description": "TechCorp Bi-Weekly Direct Deposit",
+                "amount": 3200,
+                "type": "income",
+                "category": "Income",
+                "account": "Checking",
+                "status": "completed",
+                "source": "manual"
+              },
+              {
+                "id": "tx-2",
+                "date": "2026-10-14",
+                "description": "Whole Foods Market",
+                "amount": 142.8,
+                "type": "expense",
+                "category": "Groceries",
+                "account": "Sapphire Card",
+                "status": "completed",
+                "source": "ai_agent"
+              },
+              {
+                "id": "tx-3",
+                "date": "2026-10-14",
+                "description": "Blue Bottle Coffee",
+                "amount": 6.75,
+                "type": "expense",
+                "category": "Dining",
+                "account": "Sapphire Card",
+                "status": "completed",
+                "source": "manual"
+              },
+              {
+                "id": "tx-4",
+                "date": "2026-10-12",
+                "description": "ConEdison Electric & Gas",
+                "amount": 84.2,
+                "type": "expense",
+                "category": "Utilities",
+                "account": "Checking",
+                "status": "completed",
+                "source": "recurring_bill"
+              },
+              {
+                "id": "tx-5",
+                "date": "2026-10-11",
+                "description": "Netflix & Spotify Subscriptions",
+                "amount": 28.98,
+                "type": "expense",
+                "category": "Subscriptions",
+                "account": "Sapphire Card",
+                "status": "completed",
+                "source": "recurring_bill"
+              },
+              {
+                "id": "tx-6",
+                "date": "2026-10-10",
+                "description": "Uber Ride SFO Airport",
+                "amount": 42.5,
+                "type": "expense",
+                "category": "Transportation",
+                "account": "Sapphire Card",
+                "status": "completed",
+                "source": "manual"
+              },
+              {
+                "id": "tx-7",
+                "date": "2026-10-08",
+                "description": "Equinox Health & Fitness",
+                "amount": 160,
+                "type": "expense",
+                "category": "Healthcare",
+                "account": "Checking",
+                "status": "completed",
+                "source": "manual"
+              },
+              {
+                "id": "tx-8",
+                "date": "2026-10-06",
+                "description": "Trader Joe's Provisions",
+                "amount": 88.35,
+                "type": "expense",
+                "category": "Groceries",
+                "account": "Sapphire Card",
+                "status": "completed",
+                "source": "manual"
+              },
+              {
+                "id": "tx-9",
+                "date": "2026-10-04",
+                "description": "Sweetgreen Salad",
+                "amount": 18.25,
+                "type": "expense",
+                "category": "Dining",
+                "account": "Sapphire Card",
+                "status": "completed",
+                "source": "manual"
+              },
+              {
+                "id": "tx-10",
+                "date": "2026-10-01",
+                "description": "Skyline Residences Monthly Rent",
+                "amount": 2100,
+                "type": "expense",
+                "category": "Housing",
+                "account": "Checking",
+                "status": "completed",
+                "source": "recurring_bill"
+              },
+              {
+                "id": "tx-11",
+                "date": "2026-10-01",
+                "description": "Monthly High-Yield Savings Sweep",
+                "amount": 600,
+                "type": "transfer",
+                "category": "Savings",
+                "account": "Savings",
+                "status": "completed",
+                "source": "ai_agent"
+              },
+              {
+                "id": "tx-12",
+                "date": "2026-09-28",
+                "description": "Freelance UX Architecture Payout",
+                "amount": 850,
+                "type": "income",
+                "category": "Income",
+                "account": "Checking",
+                "status": "completed",
+                "source": "manual"
+              },
+              {
+                "id": "tx-13",
+                "date": "2026-09-26",
+                "description": "Amazon Essentials & Office Gear",
+                "amount": 64.12,
+                "type": "expense",
+                "category": "Shopping",
+                "account": "Sapphire Card",
+                "status": "completed",
+                "source": "manual"
+              }
+            ],
+            "count": 18,
+            "totalAmount": 11463.77
+          },
+          "timestamp": "2026-10-17T10:45:39.769Z"
+        }
+      ],
+      "verificationResult": {
+        "verified": true,
+        "message": "Deterministic execution verified against ledger"
+      },
+      "id": "act-1792233944084",
+      "timestamp": "2026-10-17T10:45:44.084Z"
+    },
+    {
+      "userPrompt": "Declined Proposal: Update Groceries Budget to $950",
+      "actionType": "proposal_rejected",
+      "summary": "User declined proposed action \"Update Groceries Budget to $950\". No financial state was modified. Reason: User decided groceries limit was too generous.",
+      "details": {
+        "proposal": {
+          "id": "prop-1792233871222-197",
+          "actionType": "create_or_update_budget",
+          "title": "Update Groceries Budget to $950",
+          "description": "Set monthly limit for Groceries to $950.",
+          "impactAnalysis": "Adjusts monthly limit for Groceries from $600 to $950 (+$350/mo). Current spend is $279.",
+          "proposedChanges": {
+            "category": "Groceries",
+            "limit": 950
+          },
+          "isConsequential": true,
+          "timestamp": "2026-10-17T10:44:31.223Z",
+          "status": "rejected"
+        },
+        "reason": "User decided groceries limit was too generous"
+      },
+      "status": "info",
+      "aiModel": "finpilot-deterministic-engine",
+      "id": "act-1792233875430",
+      "timestamp": "2026-10-17T10:44:35.430Z"
+    },
+    {
+      "userPrompt": "Set my Groceries budget to $950",
+      "actionType": "create_or_update_budget",
+      "summary": "\n\nI've prepared a budget update for you. Here are the details:\n\n**Proposed Change:**\n- **Category:** Groceries\n- **Current Budget:** $600/month\n- **New Budget:*...",
+      "details": {
+        "toolCalls": [
+          {
+            "toolName": "create_or_update_budget",
+            "arguments": {
+              "category": "Groceries",
+              "limit": 950,
+              "confirmed": false
+            },
+            "result": {},
+            "timestamp": "2026-10-17T10:44:31.223Z"
+          }
+        ],
+        "proposal": {
+          "id": "prop-1792233871222-197",
+          "actionType": "create_or_update_budget",
+          "title": "Update Groceries Budget to $950",
+          "description": "Set monthly limit for Groceries to $950.",
+          "impactAnalysis": "Adjusts monthly limit for Groceries from $600 to $950 (+$350/mo). Current spend is $279.",
+          "proposedChanges": {
+            "category": "Groceries",
+            "limit": 950
+          },
+          "isConsequential": true,
+          "timestamp": "2026-10-17T10:44:31.223Z",
+          "status": "rejected"
+        }
+      },
+      "status": "awaiting_confirmation",
+      "aiModel": "openrouter/free",
+      "toolCalls": [
+        {
+          "toolName": "create_or_update_budget",
+          "arguments": {
+            "category": "Groceries",
+            "limit": 950,
+            "confirmed": false
+          },
+          "result": {},
+          "timestamp": "2026-10-17T10:44:31.223Z"
+        }
+      ],
+      "verificationResult": {
+        "verified": true,
+        "message": "Deterministic execution verified against ledger"
+      },
+      "id": "act-1792233875421",
+      "timestamp": "2026-10-17T10:44:35.421Z"
+    },
+    {
+      "userPrompt": "Show me my recent transactions",
+      "actionType": "get_transactions",
+      "summary": "Here are your 17 most recent transactions:\n\n**Recent Activity (Oct 8 – Oct 17, 2026)**\n\n| Date | Description | Amount | Type | Category | Account |\n|------|----...",
+      "details": {
+        "toolCalls": [
+          {
+            "toolName": "get_transactions",
+            "arguments": {},
+            "result": {
+              "transactions": [
+                {
+                  "date": "2026-10-17",
+                  "description": "Bill Payment: Small Cloud Storage Fee",
+                  "amount": 9.99,
+                  "type": "expense",
+                  "category": "Utilities",
+                  "account": "Checking",
+                  "status": "completed",
+                  "source": "recurring_bill",
+                  "id": "tx-1792233850916-336"
+                },
+                {
+                  "date": "2026-10-17",
+                  "description": "Autonomous Sweep: ৳4,000 to Monthly Protected Savings Reserve (৳)",
+                  "amount": 4000,
+                  "type": "transfer",
+                  "category": "Savings",
+                  "account": "High-Yield Savings",
+                  "status": "completed",
+                  "source": "ai_agent",
+                  "id": "tx-1792228695495-8"
+                },
+                {
+                  "date": "2026-10-16",
+                  "description": "QA Persistence Assert Tx 1792228695462",
+                  "amount": 47.85,
+                  "type": "expense",
+                  "category": "Groceries",
+                  "account": "Checking",
+                  "status": "completed",
+                  "source": "manual",
+                  "id": "tx-1792228695464-233"
+                },
+                {
+                  "date": "2026-10-17",
+                  "description": "Bill Payment: Small Cloud Storage Fee",
+                  "amount": 9.99,
+                  "type": "expense",
+                  "category": "Utilities",
+                  "account": "Checking",
+                  "status": "completed",
+                  "source": "recurring_bill",
+                  "id": "tx-1792228695390-634"
+                },
+                {
+                  "id": "tx-1",
+                  "date": "2026-10-15",
+                  "description": "TechCorp Bi-Weekly Direct Deposit",
+                  "amount": 3200,
+                  "type": "income",
+                  "category": "Income",
+                  "account": "Checking",
+                  "status": "completed",
+                  "source": "manual"
+                },
+                {
+                  "id": "tx-2",
+                  "date": "2026-10-14",
+                  "description": "Whole Foods Market",
+                  "amount": 142.8,
+                  "type": "expense",
+                  "category": "Groceries",
+                  "account": "Sapphire Card",
+                  "status": "completed",
+                  "source": "ai_agent"
+                },
+                {
+                  "id": "tx-3",
+                  "date": "2026-10-14",
+                  "description": "Blue Bottle Coffee",
+                  "amount": 6.75,
+                  "type": "expense",
+                  "category": "Dining",
+                  "account": "Sapphire Card",
+                  "status": "completed",
+                  "source": "manual"
+                },
+                {
+                  "id": "tx-4",
+                  "date": "2026-10-12",
+                  "description": "ConEdison Electric & Gas",
+                  "amount": 84.2,
+                  "type": "expense",
+                  "category": "Utilities",
+                  "account": "Checking",
+                  "status": "completed",
+                  "source": "recurring_bill"
+                },
+                {
+                  "id": "tx-5",
+                  "date": "2026-10-11",
+                  "description": "Netflix & Spotify Subscriptions",
+                  "amount": 28.98,
+                  "type": "expense",
+                  "category": "Subscriptions",
+                  "account": "Sapphire Card",
+                  "status": "completed",
+                  "source": "recurring_bill"
+                },
+                {
+                  "id": "tx-6",
+                  "date": "2026-10-10",
+                  "description": "Uber Ride SFO Airport",
+                  "amount": 42.5,
+                  "type": "expense",
+                  "category": "Transportation",
+                  "account": "Sapphire Card",
+                  "status": "completed",
+                  "source": "manual"
+                },
+                {
+                  "id": "tx-7",
+                  "date": "2026-10-08",
+                  "description": "Equinox Health & Fitness",
+                  "amount": 160,
+                  "type": "expense",
+                  "category": "Healthcare",
+                  "account": "Checking",
+                  "status": "completed",
+                  "source": "manual"
+                },
+                {
+                  "id": "tx-8",
+                  "date": "2026-10-06",
+                  "description": "Trader Joe's Provisions",
+                  "amount": 88.35,
+                  "type": "expense",
+                  "category": "Groceries",
+                  "account": "Sapphire Card",
+                  "status": "completed",
+                  "source": "manual"
+                },
+                {
+                  "id": "tx-9",
+                  "date": "2026-10-04",
+                  "description": "Sweetgreen Salad",
+                  "amount": 18.25,
+                  "type": "expense",
+                  "category": "Dining",
+                  "account": "Sapphire Card",
+                  "status": "completed",
+                  "source": "manual"
+                },
+                {
+                  "id": "tx-10",
+                  "date": "2026-10-01",
+                  "description": "Skyline Residences Monthly Rent",
+                  "amount": 2100,
+                  "type": "expense",
+                  "category": "Housing",
+                  "account": "Checking",
+                  "status": "completed",
+                  "source": "recurring_bill"
+                },
+                {
+                  "id": "tx-11",
+                  "date": "2026-10-01",
+                  "description": "Monthly High-Yield Savings Sweep",
+                  "amount": 600,
+                  "type": "transfer",
+                  "category": "Savings",
+                  "account": "Savings",
+                  "status": "completed",
+                  "source": "ai_agent"
+                },
+                {
+                  "id": "tx-12",
+                  "date": "2026-09-28",
+                  "description": "Freelance UX Architecture Payout",
+                  "amount": 850,
+                  "type": "income",
+                  "category": "Income",
+                  "account": "Checking",
+                  "status": "completed",
+                  "source": "manual"
+                },
+                {
+                  "id": "tx-13",
+                  "date": "2026-09-26",
+                  "description": "Amazon Essentials & Office Gear",
+                  "amount": 64.12,
+                  "type": "expense",
+                  "category": "Shopping",
+                  "account": "Sapphire Card",
+                  "status": "completed",
+                  "source": "manual"
+                }
+              ],
+              "count": 17,
+              "totalAmount": 11453.78
+            },
+            "timestamp": "2026-10-17T10:44:13.997Z"
+          }
+        ]
+      },
+      "status": "success",
+      "aiModel": "openrouter/free",
+      "toolCalls": [
+        {
+          "toolName": "get_transactions",
+          "arguments": {},
+          "result": {
+            "transactions": [
+              {
+                "date": "2026-10-17",
+                "description": "Bill Payment: Small Cloud Storage Fee",
+                "amount": 9.99,
+                "type": "expense",
+                "category": "Utilities",
+                "account": "Checking",
+                "status": "completed",
+                "source": "recurring_bill",
+                "id": "tx-1792233850916-336"
+              },
+              {
+                "date": "2026-10-17",
+                "description": "Autonomous Sweep: ৳4,000 to Monthly Protected Savings Reserve (৳)",
+                "amount": 4000,
+                "type": "transfer",
+                "category": "Savings",
+                "account": "High-Yield Savings",
+                "status": "completed",
+                "source": "ai_agent",
+                "id": "tx-1792228695495-8"
+              },
+              {
+                "date": "2026-10-16",
+                "description": "QA Persistence Assert Tx 1792228695462",
+                "amount": 47.85,
+                "type": "expense",
+                "category": "Groceries",
+                "account": "Checking",
+                "status": "completed",
+                "source": "manual",
+                "id": "tx-1792228695464-233"
+              },
+              {
+                "date": "2026-10-17",
+                "description": "Bill Payment: Small Cloud Storage Fee",
+                "amount": 9.99,
+                "type": "expense",
+                "category": "Utilities",
+                "account": "Checking",
+                "status": "completed",
+                "source": "recurring_bill",
+                "id": "tx-1792228695390-634"
+              },
+              {
+                "id": "tx-1",
+                "date": "2026-10-15",
+                "description": "TechCorp Bi-Weekly Direct Deposit",
+                "amount": 3200,
+                "type": "income",
+                "category": "Income",
+                "account": "Checking",
+                "status": "completed",
+                "source": "manual"
+              },
+              {
+                "id": "tx-2",
+                "date": "2026-10-14",
+                "description": "Whole Foods Market",
+                "amount": 142.8,
+                "type": "expense",
+                "category": "Groceries",
+                "account": "Sapphire Card",
+                "status": "completed",
+                "source": "ai_agent"
+              },
+              {
+                "id": "tx-3",
+                "date": "2026-10-14",
+                "description": "Blue Bottle Coffee",
+                "amount": 6.75,
+                "type": "expense",
+                "category": "Dining",
+                "account": "Sapphire Card",
+                "status": "completed",
+                "source": "manual"
+              },
+              {
+                "id": "tx-4",
+                "date": "2026-10-12",
+                "description": "ConEdison Electric & Gas",
+                "amount": 84.2,
+                "type": "expense",
+                "category": "Utilities",
+                "account": "Checking",
+                "status": "completed",
+                "source": "recurring_bill"
+              },
+              {
+                "id": "tx-5",
+                "date": "2026-10-11",
+                "description": "Netflix & Spotify Subscriptions",
+                "amount": 28.98,
+                "type": "expense",
+                "category": "Subscriptions",
+                "account": "Sapphire Card",
+                "status": "completed",
+                "source": "recurring_bill"
+              },
+              {
+                "id": "tx-6",
+                "date": "2026-10-10",
+                "description": "Uber Ride SFO Airport",
+                "amount": 42.5,
+                "type": "expense",
+                "category": "Transportation",
+                "account": "Sapphire Card",
+                "status": "completed",
+                "source": "manual"
+              },
+              {
+                "id": "tx-7",
+                "date": "2026-10-08",
+                "description": "Equinox Health & Fitness",
+                "amount": 160,
+                "type": "expense",
+                "category": "Healthcare",
+                "account": "Checking",
+                "status": "completed",
+                "source": "manual"
+              },
+              {
+                "id": "tx-8",
+                "date": "2026-10-06",
+                "description": "Trader Joe's Provisions",
+                "amount": 88.35,
+                "type": "expense",
+                "category": "Groceries",
+                "account": "Sapphire Card",
+                "status": "completed",
+                "source": "manual"
+              },
+              {
+                "id": "tx-9",
+                "date": "2026-10-04",
+                "description": "Sweetgreen Salad",
+                "amount": 18.25,
+                "type": "expense",
+                "category": "Dining",
+                "account": "Sapphire Card",
+                "status": "completed",
+                "source": "manual"
+              },
+              {
+                "id": "tx-10",
+                "date": "2026-10-01",
+                "description": "Skyline Residences Monthly Rent",
+                "amount": 2100,
+                "type": "expense",
+                "category": "Housing",
+                "account": "Checking",
+                "status": "completed",
+                "source": "recurring_bill"
+              },
+              {
+                "id": "tx-11",
+                "date": "2026-10-01",
+                "description": "Monthly High-Yield Savings Sweep",
+                "amount": 600,
+                "type": "transfer",
+                "category": "Savings",
+                "account": "Savings",
+                "status": "completed",
+                "source": "ai_agent"
+              },
+              {
+                "id": "tx-12",
+                "date": "2026-09-28",
+                "description": "Freelance UX Architecture Payout",
+                "amount": 850,
+                "type": "income",
+                "category": "Income",
+                "account": "Checking",
+                "status": "completed",
+                "source": "manual"
+              },
+              {
+                "id": "tx-13",
+                "date": "2026-09-26",
+                "description": "Amazon Essentials & Office Gear",
+                "amount": 64.12,
+                "type": "expense",
+                "category": "Shopping",
+                "account": "Sapphire Card",
+                "status": "completed",
+                "source": "manual"
+              }
+            ],
+            "count": 17,
+            "totalAmount": 11453.78
+          },
+          "timestamp": "2026-10-17T10:44:13.997Z"
+        }
+      ],
+      "verificationResult": {
+        "verified": true,
+        "message": "Deterministic execution verified against ledger"
+      },
+      "id": "act-1792233866840",
+      "timestamp": "2026-10-17T10:44:26.840Z"
+    },
+    {
+      "userPrompt": "Autonomous Workflow Triggered: Demo Scenario: ৳20,000 Remaining · Save ৳5,000 (Feasible Plan)",
+      "actionType": "workflow_plan",
+      "summary": "Planned feasible budget: ৳10,200 essential bills + ৳5,000 savings + ৳4,800 buffer.",
+      "details": {
+        "workflowId": "wf-1792232619254",
+        "isFeasible": true,
+        "startingAmount": 20000,
+        "targetSavings": 5000
+      },
+      "status": "awaiting_confirmation",
+      "aiModel": "finpilot-autonomous-workflow-engine",
+      "id": "act-1792232619260",
+      "timestamp": "2026-10-17T10:23:39.260Z"
+    },
     {
       "userPrompt": "Rollback Autonomous Workflow: QA Rollback Replay Test",
       "actionType": "workflow_rollback",

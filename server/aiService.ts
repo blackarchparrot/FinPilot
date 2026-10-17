@@ -300,6 +300,7 @@ RULES:
           'X-Title': 'FinPilot AI Autonomous Copilot',
         },
         body: JSON.stringify(openRouterPayload),
+        signal: AbortSignal.timeout(5000),
       });
 
       if (!apiRes.ok) {
@@ -398,6 +399,7 @@ RULES:
               'X-Title': 'FinPilot AI Autonomous Copilot',
             },
             body: JSON.stringify(secondPayload),
+            signal: AbortSignal.timeout(5000),
           });
 
           if (secondRes.ok) {
